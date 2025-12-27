@@ -1,57 +1,126 @@
 # Lenovo Vantage for Linux
-This shell script helps you to provide [Lenovo Vantage](https://www.lenovo.com/us/en/software/vantage) in GNU/Linux operating system.
 
-## :rocket: Features
-![image](images/main_menu.png)
-* Conservation Mode (Limit battery charge to prolong its life)
-* Always-On USB (Enable USB power output when the system is in low-power modes)
-* Thermal/Fan Mode (Quiet, balanced and performance modes)
-* FN Key Lock
-* Camera Privacy Switch
-* Microphone Privacy Switch
-* Touchpad Switch
-* Wi-Fi Switch
+Lenovo Vantage controls for conservation mode, always-on USB, fan profiles, FN lock, camera, microphone, touchpad, and Wi‑Fi on supported Lenovo laptops.
 
-## :computer: Installation
+![Main menu](images/main_menu.png)
 
-First of all, you need to clone the repository with this command:
+## Feature matrix
+
+| Feature | Notes |
+| --- | --- |
+| Conservation Mode | Limits charge to prolong battery life |
+| Always-On USB | Keeps USB powered during sleep/hibernate |
+| Fan Mode | Silent, Standard, Dust Cleaning, Efficient Dissipation |
+| FN Lock | Toggle function key behavior |
+| Camera | Loads/unloads `uvcvideo` module |
+| Microphone | Mute/unmute via `pactl` |
+| Touchpad | Enable/disable via `xinput` (X11 only) |
+| Wi‑Fi | Toggle via `nmcli` (NetworkManager) |
+
+## Requirements
+
+- X11 session (Wayland currently unsupported for touchpad controls)
+- Lenovo platform exposing `/sys/bus/platform/devices/VPC2004:*`
+- `zenity`, `xinput`, `NetworkManager`, `pactl` (PulseAudio or PipeWire), `pkexec`
+
+### Session compatibility
+
+| Feature                 | X11 | Wayland |
+| ---                     | --- | ---     |
+| Battery Conservation    | ✅  | ✅      |
+| Fan Mode                | ✅  | ✅      |
+| Touchpad Control        | ✅  | ❌      |
+| xinput Features         | ✅  | ❌      |
+
+Wayland restricts input device control for security reasons, so touchpad and other xinput-based actions are disabled there.
+
+Package names by distro:
+
+- Arch: `zenity xorg-xinput networkmanager`
+- Debian/Ubuntu: `zenity xinput network-manager`
+- Fedora: `zenity xinput NetworkManager pipewire-pulseaudio`
+- openSUSE: `zenity xinput NetworkManager pipewire-pulseaudio`
+
+## Quick start
+
+1) Clone and enter the project
+
 ```bash
 git clone https://github.com/niizam/vantage.git
 cd vantage
 ```
-Then you can easily run this command:
+
+2) Optional: check your system before installing
+
+```bash
+./scripts/self-check.sh
+```
+
+3) Install dependencies and desktop entry (needs sudo/root)
 
 ```bash
 sudo make install
 ```
-Run "Lenovo Vantage" from your applications list.
 
-## :hotsprings: Uninstall
-To uninstall Lenovo Vantage, you can just run this:
+4) Run the app
+
+- From the desktop menu: search for “Lenovo Vantage”.
+- From a terminal: `vantage` (requires an X11 session).
+
+5) Uninstall later
 
 ```bash
 sudo make uninstall
 ```
 
-## :warning: Requirements
-* `zenity`
-* `xorg-xinput` or `xinput`
-* `networkmanager`
-* `pulseaudio` or `pipewire-pulse`
+## Install
 
-
-if they are not already installed, you can install them using your package manager.
-
-For Arch Linux:
 ```bash
-sudo pacman -S zenity xorg-xinput networkmanager
-``` 
-For Debian derivatives (Ubuntu, Mint, Pop!_OS, etc):
-```bash
-sudo apt install zenity xinput
+git clone https://github.com/niizam/vantage.git
+cd vantage
+
+# Optional: preview actions without changes
+make dry-run
+
+# Install (requires sudo/root)
+sudo make install
 ```
-For Fedora:
+
+Launch from your desktop menu as “Lenovo Vantage” or run `vantage` in a terminal (X11 required for touchpad controls).
+
+## Self-check
+
+Before first run (or when troubleshooting), execute:
+
 ```bash
-sudo dnf install zenity xinput NetworkManager pipewire-pulseaudio
+./scripts/self-check.sh
 ```
----
+
+The script validates dependencies, session type, VPC device presence, and NetworkManager status.
+
+## Uninstall
+
+```bash
+sudo make uninstall
+```
+
+## Troubleshooting
+
+- Self-check fails with VPC missing: hardware interface not exposed; ensure this is a supported Lenovo model.
+- On Wayland sessions touchpad control is unavailable; this is expected and limited by Wayland.
+- NetworkManager inactive: start it with `sudo systemctl start NetworkManager` or enable the service.
+- pkexec prompts repeatedly: ensure PolicyKit is configured and you have admin rights.
+
+## Development
+
+- Lint scripts: `make lint`
+- Format check: `make format`
+- CI: GitHub Actions runs ShellCheck and shfmt on pushes/PRs.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for versioned notes.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
